@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
@@ -9,6 +10,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Vue2Spa.Logging;
 using Vue2Spa.Models;
 
 namespace Vue2Spa
@@ -36,7 +38,10 @@ namespace Vue2Spa
             services.AddDbContext<MyDataContext>(options =>
                 options.UseSqlServer(connection));
             // Add framework services.
-            services.AddMvc();
+            services.AddMvc()
+                .AddJsonOptions(
+            options => options.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore
+        );
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -44,6 +49,8 @@ namespace Vue2Spa
         {
             loggerFactory.AddConsole(Configuration.GetSection("Logging"));
             loggerFactory.AddDebug();
+
+            //loggerFactory.AddFile(Path.Combine(Directory.GetCurrentDirectory(), "file_logger.txt"));
 
             if (env.IsDevelopment())
             {

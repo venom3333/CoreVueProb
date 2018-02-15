@@ -1,9 +1,12 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
+using Newtonsoft.Json;
 using Vue2Spa.Models;
 
 namespace Vue2Spa.Controllers
@@ -36,22 +39,64 @@ namespace Vue2Spa.Controllers
         }
 
         [HttpGet("[action]")]
-        public IEnumerable<MyData> MyData()
+        public IEnumerable<MyData> MyData([FromServices]ILoggerFactory loggerFactory)
         {
             var myData = db.MyDatas
                 .Include(md => md.MyDataCategory)
                     .ThenInclude(mdc => mdc.Category)
                         ;
+
+            var logger = loggerFactory.CreateLogger("FileLogger");
+            logger.LogInformation($"{DateTime.Now.ToString()} Выдаем результаты MyDatas");
+
             return myData;
         }
 
-        //private static string RandomString(int length)
-        //{
-        //    var random = new Random();
-        //    const string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
-        //    return new string(Enumerable.Repeat(chars, length)
-        //      .Select(s => s[random.Next(s.Length)]).ToArray());
-        //}
+        [HttpPost("[action]")]
+        public IEnumerable<Category> GetCategories()
+        {
+            var categories = db.Categories;
+
+            return categories;
+        }
+
+        [HttpPost("[action]")]
+        public async Task<bool> AddMyData([FromBody]MyData myData)
+        {
+            if (ModelState.IsValid)
+            {
+                db.MyDatas.Add(myData);
+                await db.SaveChangesAsync();
+                return true;
+            }
+
+            return false;
+        }
+
+        [HttpPost("[action]")]
+        public async Task<bool> DeleteMyData([FromBody]Dictionary<string, int> id)
+        {
+            try
+            {
+                int _id = id["id"];
+                var myData = db.MyDatas.FirstOrDefault(md => md.Id == _id);
+                if (myData != null)
+                {
+                    db.MyDatas.Remove(myData);
+                    await db.SaveChangesAsync();
+                    return true;
+                }
+                else
+                {
+                    throw new Exception("Id для удаления не найден в БД!");
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine(ex);
+                return false;
+            }
+        }
 
         public class WeatherForecast
         {

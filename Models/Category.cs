@@ -10,6 +10,6 @@ namespace Vue2Spa.Models
         public int Id { get; set; }
         public string CategoryName { get; set; }
 
-        public ICollection<MyDataCategory> MyDataCategory { get; set; }
+        public IEnumerable<MyDataCategory> MyDataCategory { get; set; }
     }
 }
