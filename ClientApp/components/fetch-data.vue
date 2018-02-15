@@ -3,33 +3,43 @@
         <h1>Weather forecast</h1>
         <p>This component demonstrates fetching data from the server.</p>
         <p v-if="!myData"><em>Loading...</em></p>
-        <button @click="fetchData()">Получить данные...</button>
-        <p v-if="showError">Ошибка при удалении!</p>
-        <table class="table" v-if="myData !== null && myData.length > 1">
-            <thead>
-                <tr>
-                    <th v-for="(value, key, index) in myData[0]">{{ key }}</th>
-                    <th></th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr v-for="dataItem in myData">
-                    <td v-for="data in dataItem">
-                        <template v-if="Array.isArray(data)">
-                            <template v-for="item in data">
-                                {{ item.category.categoryName }}
-                                <br>
+        <template v-if="myData && myData.length > 0">
+            <button @click="fetchData()" class="btn btn-primary">Получить данные...</button>
+            <p v-if="showError">Ошибка при удалении!</p>
+            <table class="table" v-if="myData !== null && myData.length > 0">
+                <thead>
+                    <tr>
+                        <th v-for="(value, key, index) in myData[0]">{{ key }}</th>
+                        <th></th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr v-for="dataItem in myData">
+                        <td v-for="data in dataItem">
+                            <template v-if="Array.isArray(data)">
+                                <template v-for="item in data">
+                                    {{ item.category.categoryName }}
+                                    <br>
+                                </template>
                             </template>
-                        </template>
-                        <template v-else>
-                            {{ data }}
-                        </template>
-                    </td>
-                    <td><button @click="deleteData(dataItem.id)">Удадить..</button></td>
-                </tr>
-            </tbody>
-        </table>
-
+                            <template v-else>
+                                {{ data }}
+                            </template>
+                        </td>
+                        <td>
+                            <router-link class="btn btn-danger" :to="{ path: '/add-data/' + dataItem.id }">
+                                Редактировать..
+                            </router-link>
+                        </td>
+                        <td><button @click="deleteData(dataItem.id)" class="btn btn-danger">Удалить..</button></td>
+                    </tr>
+                </tbody>
+            </table>
+        </template>
+        <template v-else>
+            Данных нет.
+        </template>
     </div>
 </template>
 <script>

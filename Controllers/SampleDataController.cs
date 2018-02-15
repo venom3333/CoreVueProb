@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
+using Vue2Spa.Extensions;
 using Vue2Spa.Models;
 
 namespace Vue2Spa.Controllers
@@ -65,7 +66,23 @@ namespace Vue2Spa.Controllers
         {
             if (ModelState.IsValid)
             {
-                db.MyDatas.Add(myData);
+                if (myData.Id > 0)
+                {
+                    var model = db.MyDatas
+                        .Include(x => x.MyDataCategory)
+                        .FirstOrDefault(x => x.Id == myData.Id);
+
+                    db.TryUpdateManyToMany(model.MyDataCategory, myData.MyDataCategory
+                    .Select(x => new MyDataCategory
+                    {
+                        CategoryId = x.CategoryId,
+                        MyDataId = myData.Id
+                    }), x => x.CategoryId);
+                }
+                else
+                {
+                    db.MyDatas.Add(myData);
+                }
                 await db.SaveChangesAsync();
                 return true;
             }
@@ -74,12 +91,35 @@ namespace Vue2Spa.Controllers
         }
 
         [HttpPost("[action]")]
+        public async Task<MyData> getSingleData([FromBody]Dictionary<string, int> id)
+        {
+            try
+            {
+                int _id = id["id"];
+                var myData = await db.MyDatas.Include(x => x.MyDataCategory).SingleOrDefaultAsync(md => md.Id == _id);
+                if (myData != null)
+                {
+                    return myData;
+                }
+                else
+                {
+                    throw new Exception("Id для редактирования не найден в БД!");
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine(ex);
+                return null;
+            }
+        }
+
+        [HttpPost("[action]")]
         public async Task<bool> DeleteMyData([FromBody]Dictionary<string, int> id)
         {
             try
             {
                 int _id = id["id"];
-                var myData = db.MyDatas.FirstOrDefault(md => md.Id == _id);
+                var myData = db.MyDatas.SingleOrDefault(md => md.Id == _id);
                 if (myData != null)
                 {
                     db.MyDatas.Remove(myData);
