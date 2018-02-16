@@ -9,6 +9,7 @@ using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using Vue2Spa.Extensions;
 using Vue2Spa.Models;
+using Vue2Spa.Filters;
 
 namespace Vue2Spa.Controllers
 {

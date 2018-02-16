@@ -10,6 +10,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Vue2Spa.Filters;
 using Vue2Spa.Logging;
 using Vue2Spa.Models;
 
@@ -38,7 +39,9 @@ namespace Vue2Spa
             services.AddDbContext<MyDataContext>(options =>
                 options.UseSqlServer(connection));
             // Add framework services.
-            services.AddMvc()
+            services.AddMvc(
+                options => options.Filters.Add(typeof(SimpleActionFilter))
+                )
                 .AddJsonOptions(
             options => options.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore
         );
